@@ -26,7 +26,13 @@ get "/lists/new" do # renders the new list form
 end
 
 post "/lists" do # create a new list
-  session[:lists] << {name: params[:list_name], todos: []}
-  session[:success] = "The list has been created."
-  redirect "/lists"
+  list_name = params[:list_name].strip
+  if (1..100).cover?(list_name.size)
+    session[:lists] << {name: list_name, todos: []}
+    session[:success] = "The list has been created."
+    redirect "/lists"
+  else
+    session[:error] = "The list name must be between 1 and 100 characters."
+    erb :new_list, layout: :layout
+  end
 end
