@@ -60,12 +60,14 @@ post '/lists' do # create a new list
 end
 
 get '/lists/:number' do
-  @list = session[:lists][params[:number].to_i]
+  @id = params[:number].to_i
+  @list = session[:lists][@id]
   erb :todo_list
 end
 
 post '/lists/:number' do
-  @list = session[:lists][params[:number].to_i]
+  @id = params[:number].to_i
+  @list = session[:lists][@id]
   todo_item = params[:todo_item].strip
   session[:error] = error_for_todo_item(todo_item)
 
@@ -75,5 +77,26 @@ post '/lists/:number' do
     @list[:todos] << todo_item
     session[:success] = 'The item has been added.'
     redirect "/lists/#{params[:number]}"
+  end
+end
+
+get '/lists/:number/edit' do # Edit an existing todo list
+  @id = params[:number].to_i
+  @list = session[:lists][@id]
+  erb :edit_list, layout: :layout
+end
+
+post '/lists/:number/edit' do
+  @id = params[:number].to_i
+  @list = session[:lists][@id]
+  list_name = params[:list_name].strip
+  session[:error] = error_for_list_name(list_name)
+
+  if session[:error]
+    erb :edit_list, layout: :layout
+  else
+    @list[:name] = list_name
+    session[:success] = 'The list has been updated.'
+    redirect "/lists/#{@id}"
   end
 end

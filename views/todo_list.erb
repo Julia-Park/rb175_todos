@@ -3,7 +3,7 @@
     <h2><%= @list[:name] %></h2>
     <ul>
       <li><button class="check">Complete All</button></li>
-      <li><a class="edit">Edit List</a></li>
+      <li><a href="/lists/<%= @id %>/edit" class="edit">Edit List</a></li>
     </ul>
   </header>
 
@@ -13,7 +13,7 @@
     <% end %>
   </ul>
 
-  <form action="/lists/<%= params[:number] %>" method="post">
+  <form action="/lists/<%= @id %>" method="post">
   <dl>
     <dt>
       <label for="todo_item">Enter a new todo item:</label>
