@@ -59,12 +59,6 @@ post '/lists' do # create a new list
 end
 
 get '/lists/:number' do
-# when clicking on a todo list, go to new page with todos on that list
-# build view where you can:
-# 1. Link - Edit List - allows you to change the name of the todo list
-# 2. Link - All Lists
-# 3. Add new todo item
-# 4. view all todo items
   @list = session[:lists][params[:number].to_i]
   erb :todo_list
 end

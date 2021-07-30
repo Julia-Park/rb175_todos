@@ -1,11 +1,10 @@
-<header>
-  <p class="actions"><a class="list" href="/lists"><img src="/images/icon_list.png"> All Lists</a></p>
-</header>
-
 <div id="todos">
   <header>
     <h2><%= @list[:name] %></h2>
-    <p><img src="/images/icon_edit.png" alt="Edit Icon">Edit List</p>
+    <ul>
+      <li><button class="check">Complete All</button></li>
+      <li><a class="edit">Edit List</a></li>
+    </ul>
   </header>
 
   <ul>
@@ -13,7 +12,7 @@
       <li><h2><%= todo %></h2></li>
     <% end %>
   </ul>
-</div>
+
 
 <form action="/lists/<%= params[:number] %>" method="post">
 <dl>
@@ -28,3 +27,4 @@
   <input type="submit" value="Add">
 </fieldset>
 </form>
+</div>
