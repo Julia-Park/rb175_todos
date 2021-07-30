@@ -22,6 +22,14 @@ helpers do
       'The list name must be unique.'
     end
   end
+
+  def error_for_todo_item(new_item)
+    if !(1..100).cover?(new_item.length)
+      'The todo item must be between 1 and 100 characters.'
+    elsif @list[:todos].any? { |item| item.downcase == new_item.downcase }
+      'The todo item must be unique.'
+    end
+  end
 end
 
 get '/' do
@@ -47,5 +55,30 @@ post '/lists' do # create a new list
     session[:lists] << { name: list_name, todos: [] }
     session[:success] = 'The list has been created.'
     redirect '/lists'
+  end
+end
+
+get '/lists/:number' do
+# when clicking on a todo list, go to new page with todos on that list
+# build view where you can:
+# 1. Link - Edit List - allows you to change the name of the todo list
+# 2. Link - All Lists
+# 3. Add new todo item
+# 4. view all todo items
+  @list = session[:lists][params[:number].to_i]
+  erb :todo_list
+end
+
+post '/lists/:number' do
+  @list = session[:lists][params[:number].to_i]
+  todo_item = params[:todo_item].strip
+  session[:error] = error_for_todo_item(todo_item)
+
+  if session[:error]
+    erb :todo_list, layout: :layout
+  else
+    @list[:todos] << todo_item
+    session[:success] = 'The item has been added.'
+    redirect '/lists/' + params[:number]
   end
 end

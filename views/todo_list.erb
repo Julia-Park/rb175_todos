@@ -1,0 +1,30 @@
+<header>
+  <p class="actions"><a class="list" href="/lists"><img src="/images/icon_list.png"> All Lists</a></p>
+</header>
+
+<div id="todos">
+  <header>
+    <h2><%= @list[:name] %></h2>
+    <p><img src="/images/icon_edit.png" alt="Edit Icon">Edit List</p>
+  </header>
+
+  <ul>
+    <% @list[:todos].each do |todo| %>
+      <li><h2><%= todo %></h2></li>
+    <% end %>
+  </ul>
+</div>
+
+<form action="/lists/<%= params[:number] %>" method="post">
+<dl>
+  <dt>
+    <label for="todo_item">Enter a new todo item:</label>
+  </dt>
+  <dd>
+    <input name="todo_item" placeholder="Todo text" type="text" value="">
+  </dd>
+</dl>
+<fieldset class="actions">
+  <input type="submit" value="Add">
+</fieldset>
+</form>
