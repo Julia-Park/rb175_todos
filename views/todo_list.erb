@@ -13,18 +13,21 @@
     <% end %>
   </ul>
 
-
-<form action="/lists/<%= params[:number] %>" method="post">
-<dl>
-  <dt>
-    <label for="todo_item">Enter a new todo item:</label>
-  </dt>
-  <dd>
-    <input name="todo_item" placeholder="Todo text" type="text" value="">
-  </dd>
-</dl>
-<fieldset class="actions">
-  <input type="submit" value="Add">
-</fieldset>
-</form>
+  <form action="/lists/<%= params[:number] %>" method="post">
+  <dl>
+    <dt>
+      <label for="todo_item">Enter a new todo item:</label>
+    </dt>
+    <dd>
+      <input name="todo_item" placeholder="Todo text" type="text" value="">
+    </dd>
+  </dl>
+  <fieldset class="actions">
+    <input type="submit" value="Add">
+  </fieldset>
+  </form>
 </div>
+
+<% content_for :header_links do %>
+  <div class="actions"><a class="list" href="/lists">All Lists</a></div>
+<% end %>

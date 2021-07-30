@@ -10,8 +10,7 @@
   <body>
     <header>
       <h1>Todo Tracker</h1>
-      <p class="actions"><a class="list" href="/lists">All Lists</a></p>
-
+      <%= yield_content :header_links %>
     </header>
 
     <% if session[:error] %>

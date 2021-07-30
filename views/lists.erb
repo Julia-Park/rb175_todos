@@ -9,4 +9,6 @@
   <% end %>
 </ul>
 
-<a href="/lists/new">New List</a>
+<% content_for :header_links do %>
+  <div class="actions"><a href="/lists/new" class="add">New List</a></div>
+<% end %>

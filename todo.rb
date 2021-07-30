@@ -2,6 +2,7 @@
 
 require 'sinatra'
 require 'sinatra/reloader'
+require 'sinatra/content_for'
 require 'tilt/erubis'
 
 configure do
@@ -73,6 +74,6 @@ post '/lists/:number' do
   else
     @list[:todos] << todo_item
     session[:success] = 'The item has been added.'
-    redirect '/lists/' + params[:number]
+    redirect "/lists/#{params[:number]}"
   end
 end
