@@ -26,7 +26,7 @@ helpers do
   def error_for_todo_item(new_item)
     if !(1..100).cover?(new_item.length)
       'The todo item must be between 1 and 100 characters.'
-    elsif @list[:todos].any? { |item| item[0].downcase == new_item.downcase }
+    elsif @list[:todos].any? { |item| item[:name].downcase == new_item.downcase }
       'The todo item must be unique.'
     end
   end
@@ -73,7 +73,7 @@ post '/lists/:number/todos' do # Add a todo item
   if session[:error]
     erb :todo_list, layout: :layout
   else
-    @list[:todos] << [todo_item, ""]
+    @list[:todos] << {name: todo_item, status: ""}
     session[:success] = 'The item has been added.'
     redirect "/lists/#{@id}"
   end
@@ -87,11 +87,12 @@ post '/lists/:number/todos/:item/delete' do # Delete an existing todo item
   redirect "/lists/#{@id}"
 end
 
-post '/lists/:number/todos/:item/toggle' do # toggles the complete/incomplete status
+post '/lists/:number/todos/:item' do # toggles the complete/incomplete status
   @id = params[:number].to_i
   @list = session[:lists][@id]
   item = @list[:todos][params[:item].to_i]
-  item[1] = item[1].empty? ? "complete" : ""
+  item[:status] = params[:status]
+  session[:success] = 'The todo item has been updated.'
   redirect "/lists/#{@id}"
 end
 
