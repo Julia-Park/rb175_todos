@@ -27,7 +27,7 @@ helpers do
   def error_for_todo_item(new_item)
     if !(1..100).cover?(new_item.length)
       'The todo item must be between 1 and 100 characters.'
-    elsif @list[:todos].any? { |item| item.downcase == new_item.downcase }
+    elsif @list[:todos].any? { |item| item[0].downcase == new_item.downcase }
       'The todo item must be unique.'
     end
   end
@@ -59,7 +59,7 @@ post '/lists' do # create a new list
   end
 end
 
-get '/lists/:number' do
+get '/lists/:number' do # Renders contents of a list
   @id = params[:number].to_i
   @list = session[:lists][@id]
   erb :todo_list
@@ -74,7 +74,7 @@ post '/lists/:number/todos' do # Add a todo item
   if session[:error]
     erb :todo_list, layout: :layout
   else
-    @list[:todos] << todo_item
+    @list[:todos] << [todo_item, ""]
     session[:success] = 'The item has been added.'
     redirect "/lists/#{@id}"
   end
@@ -83,12 +83,20 @@ end
 post '/lists/:number/todos/:item/delete' do # Delete an existing todo item
   @id = params[:number].to_i
   @list = session[:lists][@id]
-  @list[:todos].delete(params[:item])
+  @list[:todos].delete_at(params[:item].to_i)
   session[:success] = "The todo item has been deleted."
   redirect "/lists/#{@id}"
 end
 
-get '/lists/:number/edit' do # Edit an existing todo list
+post '/lists/:number/todos/:item/toggle' do # toggles the complete/incomplete status
+  @id = params[:number].to_i
+  @list = session[:lists][@id]
+  item = @list[:todos][params[:item].to_i]
+  item[1] = item[1].empty? ? "complete" : ""
+  redirect "/lists/#{@id}"
+end
+
+get '/lists/:number/edit' do # Renders page to edit an existing list
   @id = params[:number].to_i
   @list = session[:lists][@id]
   erb :edit_list, layout: :layout

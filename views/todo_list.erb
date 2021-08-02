@@ -8,11 +8,15 @@
   </header>
 
   <ul>
-    <% @list[:todos].each do |todo| %>
-      <li>
-        <h2><%= todo %></h2>
-        <form action="/lists/<%= @id %>/todos/<%= todo %>/delete" method="post" class="delete">
-          <input type="submit">
+    <% @list[:todos].each_with_index do |todo, idx| %>
+      <li class="<%= todo[1] %>">
+        <form action="/lists/<%= @id %>/todos/<%= idx %>/toggle" method="post" class="check">
+          <input type="hidden" name="completed" value="" />
+          <button type="submit">Complete</button>
+        </form>
+        <h3><%= todo[0] %></h3>
+        <form action="/lists/<%= @id %>/todos/<%= idx %>/delete" method="post" class="delete">
+          <input type="submit" />
         </form>
       </li>
     <% end %>
