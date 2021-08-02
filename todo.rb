@@ -11,7 +11,6 @@ configure do
 end
 
 before do
-  # use this block to make sure the user session contains at least an empty array
   session[:lists] ||= []
 end
 

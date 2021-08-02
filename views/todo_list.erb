@@ -28,7 +28,7 @@
       <label for="todo_item">Enter a new todo item:</label>
     </dt>
     <dd>
-      <input name="todo_item" placeholder="Todo text" type="text" value="">
+      <input name="todo_item" placeholder="Todo text" type="text" value="<%= params[:todo_item] || "" %>">
     </dd>
   </dl>
   <fieldset class="actions">
