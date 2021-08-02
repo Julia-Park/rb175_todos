@@ -65,7 +65,7 @@ get '/lists/:number' do
   erb :todo_list
 end
 
-post '/lists/:number' do
+post '/lists/:number/todos' do
   @id = params[:number].to_i
   @list = session[:lists][@id]
   todo_item = params[:todo_item].strip
@@ -86,7 +86,7 @@ get '/lists/:number/edit' do # Edit an existing todo list
   erb :edit_list, layout: :layout
 end
 
-post '/lists/:number/edit' do
+post '/lists/:number/edit' do # Edit an existing todo list
   @id = params[:number].to_i
   @list = session[:lists][@id]
   list_name = params[:list_name].strip
@@ -101,7 +101,7 @@ post '/lists/:number/edit' do
   end
 end
 
-post '/lists/:number/delete' do
+post '/lists/:number/delete' do # Delete an existing todo list
   @id = params[:number].to_i
   session[:lists].delete_at(@id)
   session[:success] = 'The list has been deleted.'
