@@ -9,7 +9,12 @@
 
   <ul>
     <% @list[:todos].each do |todo| %>
-      <li><h2><%= todo %></h2></li>
+      <li>
+        <h2><%= todo %></h2>
+        <form action="/lists/<%= @id %>/todos/<%= todo %>/delete" method="post" class="delete">
+          <input type="submit">
+        </form>
+      </li>
     <% end %>
   </ul>
 

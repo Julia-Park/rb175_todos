@@ -65,7 +65,7 @@ get '/lists/:number' do
   erb :todo_list
 end
 
-post '/lists/:number/todos' do
+post '/lists/:number/todos' do # Add a todo item
   @id = params[:number].to_i
   @list = session[:lists][@id]
   todo_item = params[:todo_item].strip
@@ -78,6 +78,14 @@ post '/lists/:number/todos' do
     session[:success] = 'The item has been added.'
     redirect "/lists/#{@id}"
   end
+end
+
+post '/lists/:number/todos/:item/delete' do # Delete an existing todo item
+  @id = params[:number].to_i
+  @list = session[:lists][@id]
+  @list[:todos].delete(params[:item])
+  session[:success] = "The todo item has been deleted."
+  redirect "/lists/#{@id}"
 end
 
 get '/lists/:number/edit' do # Edit an existing todo list
