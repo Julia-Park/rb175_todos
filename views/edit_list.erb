@@ -1,14 +1,23 @@
-<form action="/lists/<%= @id %>/edit" method="post">
-  <dl>
-    <dt>
-      <label for="list_name">Enter the new name for the <%= @list[:name] %> todo list:</label>
-    </dt>
-    <dd>
-      <input name="list_name" placeholder="New List Name" type="text" value="<%= params[:list_name] || @list[:name] %>">
-    </dd>
-  </dl>
-  <fieldset class="actions">
-    <input type="submit" value="Save">
-    <a href="/lists/<%= @id %>">Cancel</a>
-  </fieldset>
-</form>
+<div id="todos">
+  <header>
+  <h2>Editing "<%= @list[:name] %>"</h2>
+  <ul>
+    <li><button class="delete">Delete List</button></li>
+  </ul>
+  </header>
+  <br>
+  <form action="/lists/<%= @id %>/edit" method="post">
+    <dl>
+      <dt>
+        <label for="list_name">Enter the new name for the list:</label>
+      </dt>
+      <dd>
+        <input name="list_name" placeholder="New List Name" type="text" value="<%= params[:list_name] || @list[:name] %>">
+      </dd>
+    </dl>
+    <fieldset class="actions">
+      <input type="submit" value="Save">
+      <a href="/lists/<%= @id %>">Cancel</a>
+    </fieldset>
+  </form>
+</div>
