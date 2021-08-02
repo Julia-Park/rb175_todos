@@ -76,7 +76,7 @@ post '/lists/:number' do
   else
     @list[:todos] << todo_item
     session[:success] = 'The item has been added.'
-    redirect "/lists/#{params[:number]}"
+    redirect "/lists/#{@id}"
   end
 end
 
@@ -99,4 +99,11 @@ post '/lists/:number/edit' do
     session[:success] = 'The list has been updated.'
     redirect "/lists/#{@id}"
   end
+end
+
+post '/lists/:number/delete' do
+  @id = params[:number].to_i
+  session[:lists].delete_at(@id)
+  session[:success] = 'The list has been deleted.'
+  redirect '/lists'
 end
