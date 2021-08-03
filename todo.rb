@@ -30,6 +30,12 @@ helpers do
       'The todo item must be unique.'
     end
   end
+
+  def complete?(list)
+    !list[:todos].empty? &&
+      list[:todos].all? { |item| item[:status] == 'complete' }
+  end
+
 end
 
 get '/' do

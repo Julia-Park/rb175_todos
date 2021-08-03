@@ -1,4 +1,4 @@
-<div id="todos">
+<section id="todos" class="<%= complete?(@list) ? "complete" : "" %>">
   <header>
     <h2><%= @list[:name] %></h2>
     <ul>
@@ -40,7 +40,7 @@
     <input type="submit" value="Add">
   </fieldset>
   </form>
-</div>
+</section>
 
 <% content_for :header_links do %>
   <div class="actions"><a class="list" href="/lists">All Lists</a></div>
