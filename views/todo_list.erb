@@ -1,4 +1,4 @@
-<section id="todos" <%= complete?(@list) ? 'class="complete"' : '' %>>
+<section id="todos" class="<%= list_class(@list) %>">
   <header>
     <h2><%= @list[:name] %></h2>
     <ul>
@@ -16,7 +16,7 @@
     <% @list[:todos].each_with_index do |todo, idx| %>
       <li class="<%= todo[:status] %>">
         <form action="/lists/<%= @id %>/todos/<%= idx %>" method="post" class="check">
-          <input type="hidden" name="status" value="<%= todo[:status].empty? ? "complete" : "" %>" />
+          <input type="hidden" name="status" value="<%= opposite_status(todo) %>" />
           <button type="submit">Complete</button>
         </form>
         <h3><%= todo[:name] %></h3>

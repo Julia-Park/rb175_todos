@@ -36,8 +36,20 @@ helpers do
       list[:todos].all? { |item| item[:status] == 'complete' }
   end
 
-  def incompleted(list)
+  def incomplete_todos_count(list)
     list[:todos].select { |item| item[:status] == '' }.size
+  end
+
+  def todos_count(list)
+    list[:todos].size
+  end
+
+  def list_class(list)
+    'complete' if complete?(list)
+  end
+
+  def opposite_status(item)
+    'complete' if item[:status].empty?
   end
 end
 
