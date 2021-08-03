@@ -1,9 +1,9 @@
 <ul id="lists">
   <% @lists.each_with_index do |list, idx| %>
-    <li class="<%= complete?(list) ? "complete" : "" %>">
+    <li <%= complete?(list) ? 'class="complete"' : '' %>>
       <a href="/lists/<%= idx %>">
         <h2><%= list[:name] %></h2>
-        <p><%= list[:todos].size %></p>
+        <p><%= "#{incompleted(list)} / #{list[:todos].size}" %></p>
       </a>
     </li>
   <% end %>

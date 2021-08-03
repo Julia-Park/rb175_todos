@@ -36,6 +36,9 @@ helpers do
       list[:todos].all? { |item| item[:status] == 'complete' }
   end
 
+  def incompleted(list)
+    list[:todos].select { |item| item[:status] == '' }.size
+  end
 end
 
 get '/' do
