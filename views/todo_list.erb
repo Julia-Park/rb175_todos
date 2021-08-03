@@ -13,7 +13,7 @@
   </header>
 
   <ul>
-    <% @list[:todos].each_with_index do |todo, idx| %>
+    <% each_by_status(@list[:todos]) do |todo, idx| %>
       <li class="<%= todo[:status] %>">
         <form action="/lists/<%= @id %>/todos/<%= idx %>" method="post" class="check">
           <input type="hidden" name="status" value="<%= opposite_status(todo) %>" />

@@ -31,9 +31,13 @@ helpers do
     end
   end
 
-  def complete?(list)
-    !list[:todos].empty? &&
-      list[:todos].all? { |item| item[:status] == 'complete' }
+  def complete?(object)
+    if !object[:status].nil? # check if object is a single item or a todo list
+      object[:status] == 'complete'
+    else
+      !object[:todos].empty? &&
+        object[:todos].all? { |item| item[:status] == 'complete' }
+    end
   end
 
   def incomplete_todos_count(list)
@@ -50,6 +54,16 @@ helpers do
 
   def opposite_status(item)
     'complete' if item[:status].empty?
+  end
+
+  def each_by_status(list, &block)
+    list.each_with_index do |element, idx|
+      yield(element, idx) unless complete?(element)
+    end
+
+    list.each_with_index do |element, idx|
+      yield(element, idx) if complete?(element)
+    end
   end
 end
 
