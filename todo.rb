@@ -73,7 +73,7 @@ post '/lists/:number/todos' do # Add a todo item
   if session[:error]
     erb :todo_list, layout: :layout
   else
-    @list[:todos] << {name: todo_item, status: ""}
+    @list[:todos] << { name: todo_item, status: '' }
     session[:success] = 'The item has been added.'
     redirect "/lists/#{@id}"
   end
@@ -83,11 +83,19 @@ post '/lists/:number/todos/:item/delete' do # Delete an existing todo item
   @id = params[:number].to_i
   @list = session[:lists][@id]
   @list[:todos].delete_at(params[:item].to_i)
-  session[:success] = "The todo item has been deleted."
+  session[:success] = 'The todo item has been deleted.'
   redirect "/lists/#{@id}"
 end
 
-post '/lists/:number/todos/:item' do # toggles the complete/incomplete status
+post '/lists/:number/complete_all' do # complete all items
+  @id = params[:number].to_i
+  @list = session[:lists][@id]
+  @list[:todos].each { |item| item[:status] = params[:status] }
+  session[:success] = 'The todo items have been updated.'
+  redirect "/lists/#{@id}"
+end
+
+post '/lists/:number/todos/:item' do # toggles the status on item
   @id = params[:number].to_i
   @list = session[:lists][@id]
   item = @list[:todos][params[:item].to_i]
