@@ -16,6 +16,14 @@ before do
 end
 
 helpers do
+  def load_list(index)
+    list = session[:lists][index] if index && session[:lists][index]
+    return list if list
+
+    session[:error] = 'The specified list was not found.'
+    redirect '/lists'
+  end
+  
   def error_for_list_name(name)
     if !(1..100).cover?(name.length)
       'The list name must be between 1 and 100 characters.'
@@ -96,13 +104,14 @@ end
 
 get '/lists/:number' do # Renders contents of a list
   @id = params[:number].to_i
-  @list = session[:lists][@id]
+  @list = load_list(@id)
+
   erb :todo_list
 end
 
 post '/lists/:number/todos' do # Add a todo item
   @id = params[:number].to_i
-  @list = session[:lists][@id]
+  @list = load_list(@id)
   todo_item = params[:todo_item].strip
   session[:error] = error_for_todo_item(todo_item)
 
@@ -117,7 +126,7 @@ end
 
 post '/lists/:number/todos/:item/delete' do # Delete an existing todo item
   @id = params[:number].to_i
-  @list = session[:lists][@id]
+  @list = load_list(@id)
   @list[:todos].delete_at(params[:item].to_i)
   session[:success] = 'The todo item has been deleted.'
   redirect "/lists/#{@id}"
@@ -125,7 +134,7 @@ end
 
 post '/lists/:number/complete_all' do # complete all items
   @id = params[:number].to_i
-  @list = session[:lists][@id]
+  @list = load_list(@id)
   @list[:todos].each { |item| item[:status] = params[:status] }
   session[:success] = 'The todo items have been updated.'
   redirect "/lists/#{@id}"
@@ -133,7 +142,7 @@ end
 
 post '/lists/:number/todos/:item' do # toggles the status on item
   @id = params[:number].to_i
-  @list = session[:lists][@id]
+  @list = load_list(@id)
   item = @list[:todos][params[:item].to_i]
   item[:status] = params[:status]
   session[:success] = 'The todo item has been updated.'
@@ -142,13 +151,13 @@ end
 
 get '/lists/:number/edit' do # Renders page to edit an existing list
   @id = params[:number].to_i
-  @list = session[:lists][@id]
+  @list = load_list(@id)
   erb :edit_list, layout: :layout
 end
 
 post '/lists/:number/edit' do # Edit an existing todo list
   @id = params[:number].to_i
-  @list = session[:lists][@id]
+  @list = load_list(@id)
   list_name = params[:list_name].strip
   session[:error] = error_for_list_name(list_name)
 
