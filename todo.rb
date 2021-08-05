@@ -5,6 +5,39 @@ require 'sinatra/reloader' if development?
 require 'sinatra/content_for'
 require 'tilt/erubis'
 
+def error_for_list_name(name)
+  if !(1..100).cover?(name.length)
+    'The list name must be between 1 and 100 characters.'
+  elsif session[:lists].any? { |list| list[:name].downcase == name.downcase }
+    'The list name must be unique.'
+  end
+end
+
+def error_for_todo_item(new_item)
+  if !(1..100).cover?(new_item.length)
+    'The todo item must be between 1 and 100 characters.'
+  elsif @list[:todos].any? { |item| item[:name].downcase == new_item.downcase }
+    'The todo item must be unique.'
+  end
+end
+
+def complete?(object)
+  if !object[:status].nil? # check if object is a single item or a todo list
+    object[:status] == 'complete'
+  else
+    !object[:todos].empty? &&
+      object[:todos].all? { |item| item[:status] == 'complete' }
+  end
+end
+
+def load_list(index)
+  list = session[:lists][index] if index && session[:lists][index]
+  return list if list
+
+  session[:error] = 'The specified list was not found.'
+  redirect '/lists'
+end
+
 configure do
   enable :sessions
   set :session_secret, 'secret'
@@ -16,39 +49,6 @@ before do
 end
 
 helpers do
-  def load_list(index)
-    list = session[:lists][index] if index && session[:lists][index]
-    return list if list
-
-    session[:error] = 'The specified list was not found.'
-    redirect '/lists'
-  end
-  
-  def error_for_list_name(name)
-    if !(1..100).cover?(name.length)
-      'The list name must be between 1 and 100 characters.'
-    elsif session[:lists].any? { |list| list[:name].downcase == name.downcase }
-      'The list name must be unique.'
-    end
-  end
-
-  def error_for_todo_item(new_item)
-    if !(1..100).cover?(new_item.length)
-      'The todo item must be between 1 and 100 characters.'
-    elsif @list[:todos].any? { |item| item[:name].downcase == new_item.downcase }
-      'The todo item must be unique.'
-    end
-  end
-
-  def complete?(object)
-    if !object[:status].nil? # check if object is a single item or a todo list
-      object[:status] == 'complete'
-    else
-      !object[:todos].empty? &&
-        object[:todos].all? { |item| item[:status] == 'complete' }
-    end
-  end
-
   def incomplete_todos_count(list)
     list[:todos].select { |item| item[:status] == '' }.size
   end
