@@ -128,8 +128,13 @@ post '/lists/:number/todos/:item/delete' do # Delete an existing todo item
   @id = params[:number].to_i
   @list = load_list(@id)
   @list[:todos].delete_at(params[:item].to_i)
-  session[:success] = 'The todo item has been deleted.'
-  redirect "/lists/#{@id}"
+
+  if env['HTTP_X_REQUESTED_WITH'] == 'XMLHttpRequest'
+    status 204 # indicates success with no content
+  else
+    session[:success] = 'The todo item has been deleted.'
+    redirect "/lists/#{@id}"
+  end
 end
 
 post '/lists/:number/complete_all' do # complete all items
@@ -173,6 +178,12 @@ end
 post '/lists/:number/delete' do # Delete an existing todo list
   @id = params[:number].to_i
   session[:lists].delete_at(@id)
+
   session[:success] = 'The list has been deleted.'
-  redirect '/lists'
+
+  if env['HTTP_X_REQUESTED_WITH'] == 'XMLHttpRequest'
+    '/lists'
+  else
+    redirect '/lists'
+  end
 end
