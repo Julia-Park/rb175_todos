@@ -38,6 +38,15 @@ def load_list(index)
   redirect '/lists'
 end
 
+def load_item(list, item_id)
+  list[:todos].select { |item| item[:id] == item_id }.first
+end
+
+def next_todo_id(list)
+  max_id = list[:todos].map { |todo| todo[:id] }.max || 0
+  max_id + 1
+end
+
 configure do
   enable :sessions
   set :session_secret, 'secret'
@@ -118,7 +127,8 @@ post '/lists/:number/todos' do # Add a todo item
   if session[:error]
     erb :todo_list, layout: :layout
   else
-    @list[:todos] << { name: todo_item, status: '' }
+    item_id = next_todo_id(@list)
+    @list[:todos] << { id: item_id, name: todo_item, status: '' }
     session[:success] = 'The item has been added.'
     redirect "/lists/#{@id}"
   end
@@ -127,7 +137,7 @@ end
 post '/lists/:number/todos/:item/delete' do # Delete an existing todo item
   @id = params[:number].to_i
   @list = load_list(@id)
-  @list[:todos].delete_at(params[:item].to_i)
+  @list[:todos].delete_if { |item| item[:id] == params[:item].to_i }
 
   if env['HTTP_X_REQUESTED_WITH'] == 'XMLHttpRequest'
     status 204 # indicates success with no content
@@ -148,7 +158,7 @@ end
 post '/lists/:number/todos/:item' do # toggles the status on item
   @id = params[:number].to_i
   @list = load_list(@id)
-  item = @list[:todos][params[:item].to_i]
+  item = load_item(@list, params[:item].to_i)
   item[:status] = params[:status]
   session[:success] = 'The todo item has been updated.'
   redirect "/lists/#{@id}"
@@ -160,7 +170,7 @@ get '/lists/:number/edit' do # Renders page to edit an existing list
   erb :edit_list, layout: :layout
 end
 
-post '/lists/:number/edit' do # Edit an existing todo list
+post '/lists/:number/edit' do # Rename an existing todo list
   @id = params[:number].to_i
   @list = load_list(@id)
   list_name = params[:list_name].strip
