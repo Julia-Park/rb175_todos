@@ -30,8 +30,8 @@ def complete?(object)
   end
 end
 
-def load_list(index)
-  list = session[:lists][index] if index && session[:lists][index]
+def load_list(list_id)
+  list = session[:lists].find { |list| list[:id] == list_id}
   return list if list
 
   session[:error] = 'The specified list was not found.'
@@ -105,7 +105,7 @@ post '/lists' do # create a new list
   if session[:error]
     erb :new_list, layout: :layout
   else
-    list_id = next_list_id(session[:lists])
+    list_id = next_id(session[:lists])
     session[:lists] << { id: list_id, name: list_name, todos: [] }
     session[:success] = 'The list has been created.'
     redirect '/lists'
@@ -188,7 +188,7 @@ end
 
 post '/lists/:list_id/delete' do # Delete an existing todo list
   @id = params[:list_id].to_i
-  session[:lists].delete_at(@id)
+  session[:lists].delete_if { |list| list[:id] == @id }
 
   session[:success] = 'The list has been deleted.'
 
