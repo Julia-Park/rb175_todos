@@ -5,10 +5,26 @@ require 'sinatra/reloader' if development?
 require 'sinatra/content_for'
 require 'tilt/erubis'
 
+class SessionPersistence
+  def initialize(session)
+    @session = session
+    @session[:lists] ||= []
+  end
+
+  def all_lists
+    @session[:lists]
+  end
+
+  def find_list(id)
+    @session[:lists].find { |list| list[:id] == list_id}
+  end
+end
+
+
 def error_for_list_name(name)
   if !(1..100).cover?(name.length)
-    'The list name must be between 1 and 100 characters.'
-  elsif session[:lists].any? { |list| list[:name].downcase == name.downcase }
+    'The list name must be between 1 and 100 chasracters.'
+  elsif @storage.all_lists.any? { |list| list[:name].downcase == name.downcase }
     'The list name must be unique.'
   end
 end
@@ -31,7 +47,7 @@ def complete?(object)
 end
 
 def load_list(list_id)
-  list = session[:lists].find { |list| list[:id] == list_id}
+  list = @storage.find_list(id)
   return list if list
 
   session[:error] = 'The specified list was not found.'
@@ -54,7 +70,7 @@ configure do
 end
 
 before do
-  session[:lists] ||= []
+  @storage = SessionPersistence.new(session)
 end
 
 helpers do
@@ -90,7 +106,7 @@ get '/' do
 end
 
 get '/lists' do # view all lists
-  @lists = session[:lists]
+  @lists = @storage.all_lists
   erb :lists, layout: :layout
 end
 
@@ -105,8 +121,8 @@ post '/lists' do # create a new list
   if session[:error]
     erb :new_list, layout: :layout
   else
-    list_id = next_id(session[:lists])
-    session[:lists] << { id: list_id, name: list_name, todos: [] }
+    list_id = next_id(@storage.all_lists)
+    @storage.all_lists << { id: list_id, name: list_name, todos: [] }
     session[:success] = 'The list has been created.'
     redirect '/lists'
   end
@@ -188,7 +204,7 @@ end
 
 post '/lists/:list_id/delete' do # Delete an existing todo list
   @id = params[:list_id].to_i
-  session[:lists].delete_if { |list| list[:id] == @id }
+  @storage.all_lists.delete_if { |list| list[:id] == @id }
 
   session[:success] = 'The list has been deleted.'
 
