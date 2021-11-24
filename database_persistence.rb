@@ -9,6 +9,7 @@ class DatabasePersistence
   def all_lists # => array of hashes
     # each has needs to contain id: '', name: '', todos: []
     sql = 'SELECT * FROM lists;'
+    puts sql
     result = @db.exec(sql)
     result.map do |tuple|
       id = tuple['id']
@@ -18,7 +19,13 @@ class DatabasePersistence
   end
 
   def find_list(list_id)
-    # @session[:lists].find { |list| list[:id] == list_id }
+    sql = 'SELECT * FROM lists WHERE id = $1'
+    puts "#{sql}: #{list_id}"
+    result = @db.exec_params(sql, [list_id])
+    tuple = result.first
+    id = tuple['id']
+    name = tuple['name']
+    {id: id, name: name, todos: []}
   end
 
   def add_list(list_name)
