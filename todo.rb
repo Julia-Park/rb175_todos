@@ -15,24 +15,61 @@ class SessionPersistence
     @session[:lists]
   end
 
-  def find_list(id)
+  def find_list(list_id)
     @session[:lists].find { |list| list[:id] == list_id}
+  end
+
+  def add_list(list_name)
+    @session[:lists] << { id: next_id(all_lists), name: list_name, todos: [] }
+  end
+
+  def delete_list(list_id)
+    all_lists.delete_if { |list| list[:id] == list_id }
+  end
+
+  def update_list_name(list_id, new_name)
+    find_list(list_id)[:name] = new_name
+  end
+
+  def add_todo_to_list(list_id, todo_item)
+    item_id = next_id(find_list(list_id)[:todos])
+    list = find_list(list_id)
+    list[:todos] << { id: item_id, name: todo_item, status: '' }
+  end
+
+  def find_item_from_list(list_id, item_id)
+    find_list(list_id)[:todos].select { |item| item[:id] == item_id }.first
+  end
+
+  def delete_todo_from_list(list_id, item_id)
+    list = find_list(list_id)
+    list[:todos].delete_if { |item| item[:id] == item_id }
+  end
+
+  def update_item_status(list_id, item_id, status)
+    find_item_from_list(list_id, item_id)[:status] = status
+  end
+
+  private
+
+  def next_id(items_with_id)
+    max_id = items_with_id.map { |item| item[:id] }.max || 0
+    max_id + 1
   end
 end
 
-
 def error_for_list_name(name)
   if !(1..100).cover?(name.length)
-    'The list name must be between 1 and 100 chasracters.'
+    'The list name must be between 1 and 100 characters.'
   elsif @storage.all_lists.any? { |list| list[:name].downcase == name.downcase }
     'The list name must be unique.'
   end
 end
 
-def error_for_todo_item(new_item)
+def error_for_todo_item(list_id, new_item)
   if !(1..100).cover?(new_item.length)
     'The todo item must be between 1 and 100 characters.'
-  elsif @list[:todos].any? { |item| item[:name].downcase == new_item.downcase }
+  elsif @storage.find_list(list_id)[:todos].any? { |item| item[:name].downcase == new_item.downcase }
     'The todo item must be unique.'
   end
 end
@@ -47,7 +84,7 @@ def complete?(object)
 end
 
 def load_list(list_id)
-  list = @storage.find_list(id)
+  list = @storage.find_list(list_id)
   return list if list
 
   session[:error] = 'The specified list was not found.'
@@ -58,10 +95,6 @@ def load_item(list, item_id)
   list[:todos].select { |item| item[:id] == item_id }.first
 end
 
-def next_id(items_with_id)
-  max_id = items_with_id.map { |item| item[:id] }.max || 0
-  max_id + 1
-end
 
 configure do
   enable :sessions
@@ -121,8 +154,7 @@ post '/lists' do # create a new list
   if session[:error]
     erb :new_list, layout: :layout
   else
-    list_id = next_id(@storage.all_lists)
-    @storage.all_lists << { id: list_id, name: list_name, todos: [] }
+    @storage.add_list(list_name)
     session[:success] = 'The list has been created.'
     redirect '/lists'
   end
@@ -137,15 +169,13 @@ end
 
 post '/lists/:list_id/todos' do # Add a todo item
   @id = params[:list_id].to_i
-  @list = load_list(@id)
   todo_item = params[:todo_item].strip
-  session[:error] = error_for_todo_item(todo_item)
+  session[:error] = error_for_todo_item(@id, todo_item)
 
   if session[:error]
     erb :todo_list, layout: :layout
   else
-    item_id = next_id(@list[:todos])
-    @list[:todos] << { id: item_id, name: todo_item, status: '' }
+    @storage.add_todo_to_list(@id, todo_item)
     session[:success] = 'The item has been added.'
     redirect "/lists/#{@id}"
   end
@@ -153,8 +183,8 @@ end
 
 post '/lists/:list_id/todos/:item_id/delete' do # Delete an existing todo item
   @id = params[:list_id].to_i
-  @list = load_list(@id)
-  @list[:todos].delete_if { |item| item[:id] == params[:item_id].to_i }
+  item_id = params[:item_id].to_i
+  @storage.delete_todo_from_list(@id, item_id)
 
   if env['HTTP_X_REQUESTED_WITH'] == 'XMLHttpRequest'
     status 204 # indicates success with no content
@@ -174,9 +204,7 @@ end
 
 post '/lists/:list_id/todos/:item_id' do # toggles the status on item
   @id = params[:list_id].to_i
-  @list = load_list(@id)
-  item = load_item(@list, params[:item_id].to_i)
-  item[:status] = params[:status]
+  @storage.update_item_status(@id, params[:item_id].to_i, params[:status])
   session[:success] = 'The todo item has been updated.'
   redirect "/lists/#{@id}"
 end
@@ -189,14 +217,13 @@ end
 
 post '/lists/:list_id/edit' do # Rename an existing todo list
   @id = params[:list_id].to_i
-  @list = load_list(@id)
   list_name = params[:list_name].strip
   session[:error] = error_for_list_name(list_name)
 
   if session[:error]
     erb :edit_list, layout: :layout
   else
-    @list[:name] = list_name
+    @storage.update_list_name(@id, list_name)
     session[:success] = 'The list has been updated.'
     redirect "/lists/#{@id}"
   end
@@ -204,7 +231,7 @@ end
 
 post '/lists/:list_id/delete' do # Delete an existing todo list
   @id = params[:list_id].to_i
-  @storage.all_lists.delete_if { |list| list[:id] == @id }
+  @storage.delete_list(@id)
 
   session[:success] = 'The list has been deleted.'
 
