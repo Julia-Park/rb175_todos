@@ -16,7 +16,7 @@ class SessionPersistence
   end
 
   def find_list(list_id)
-    @session[:lists].find { |list| list[:id] == list_id}
+    @session[:lists].find { |list| list[:id] == list_id }
   end
 
   def add_list(list_name)
@@ -28,7 +28,8 @@ class SessionPersistence
   end
 
   def update_list_name(list_id, new_name)
-    find_list(list_id)[:name] = new_name
+    list = find_list(list_id)
+    list[:name] = new_name
   end
 
   def add_todo_to_list(list_id, todo_item)
@@ -37,8 +38,9 @@ class SessionPersistence
     list[:todos] << { id: item_id, name: todo_item, status: '' }
   end
 
-  def find_item_from_list(list_id, item_id)
-    find_list(list_id)[:todos].select { |item| item[:id] == item_id }.first
+  def find_todo_from_list(list_id, item_id)
+    list = find_list(list_id)
+    list[:todos].select { |item| item[:id] == item_id }.first
   end
 
   def delete_todo_from_list(list_id, item_id)
@@ -47,7 +49,12 @@ class SessionPersistence
   end
 
   def update_item_status(list_id, item_id, status)
-    find_item_from_list(list_id, item_id)[:status] = status
+    find_todo_from_list(list_id, item_id)[:status] = status
+  end
+
+  def complete_all_todos(list_id)
+    list = find_list(list_id)
+    list[:todos].each { |item| item[:status] = 'complete' }
   end
 
   private
@@ -90,11 +97,6 @@ def load_list(list_id)
   session[:error] = 'The specified list was not found.'
   redirect '/lists'
 end
-
-def load_item(list, item_id)
-  list[:todos].select { |item| item[:id] == item_id }.first
-end
-
 
 configure do
   enable :sessions
@@ -169,6 +171,7 @@ end
 
 post '/lists/:list_id/todos' do # Add a todo item
   @id = params[:list_id].to_i
+  @list = @storage.find_list(@id)
   todo_item = params[:todo_item].strip
   session[:error] = error_for_todo_item(@id, todo_item)
 
@@ -196,15 +199,15 @@ end
 
 post '/lists/:list_id/complete_all' do # complete all items
   @id = params[:list_id].to_i
-  @list = load_list(@id)
-  @list[:todos].each { |item| item[:status] = params[:status] }
+  @storage.complete_all_todos(@id)
   session[:success] = 'The todo items have been updated.'
   redirect "/lists/#{@id}"
 end
 
-post '/lists/:list_id/todos/:item_id' do # toggles the status on item
+post '/lists/:list_id/todos/:item_id' do # changes the status on item
   @id = params[:list_id].to_i
-  @storage.update_item_status(@id, params[:item_id].to_i, params[:status])
+  item_id = params[:item_id].to_i
+  @storage.update_item_status(@id, item_id, params[:status])
   session[:success] = 'The todo item has been updated.'
   redirect "/lists/#{@id}"
 end
@@ -217,6 +220,7 @@ end
 
 post '/lists/:list_id/edit' do # Rename an existing todo list
   @id = params[:list_id].to_i
+  @list = @storage.find_list(@id)
   list_name = params[:list_name].strip
   session[:error] = error_for_list_name(list_name)
 
