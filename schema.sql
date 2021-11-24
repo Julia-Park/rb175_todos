@@ -1,11 +1,11 @@
-CREATE TABLE list (
+CREATE TABLE lists (
   id serial PRIMARY KEY,
   name text UNIQUE NOT NULL
 );
 
 CREATE TABLE todo (
   id serial PRIMARY KEY,
-  list_id integer NOT NULL REFERENCES list(id),
+  lists_id integer NOT NULL REFERENCES lists(id),
   name text NOT NULL,
   completed boolean NOT NULL DEFAULT false
 );

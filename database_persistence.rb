@@ -6,8 +6,15 @@ class DatabasePersistence
     setup_schema
   end
 
-  def all_lists
-    # @session[:lists]
+  def all_lists # => array of hashes
+    # each has needs to contain id: '', name: '', todos: []
+    sql = 'SELECT * FROM lists;'
+    result = @db.exec(sql)
+    result.map do |tuple|
+      id = tuple['id']
+      name = tuple['name']
+      {id: id, name: name, todos: []}
+    end
   end
 
   def find_list(list_id)
@@ -58,13 +65,13 @@ class DatabasePersistence
     result = @db.exec( <<-SQL
       SELECT COUNT(*) 
       FROM information_schema.tables 
-      WHERE table_schema = 'public' AND table_name = 'list';
+      WHERE table_schema = 'public' AND table_name = 'lists';
       SQL
     )
 
-    if result.values[0][0] == 0
+    if result.values[0][0] == '0'
       sql = File.read('./schema.sql')
-      @connection.exec(sql)
+      @db.exec(sql)
     end
   end
 end
