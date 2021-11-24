@@ -1,16 +1,17 @@
 require 'pg'
 
 class DatabasePersistence
-  def initialize
+  def initialize(logger)
     @db = PG.connect(dbname: 'todos')
+    @logger = logger
     setup_schema
   end
 
   def all_lists # => array of hashes
     # each has needs to contain id: '', name: '', todos: []
     sql = 'SELECT * FROM lists;'
-    puts sql
-    result = @db.exec(sql)
+    result = query(sql)
+
     result.map do |tuple|
       id = tuple['id']
       name = tuple['name']
@@ -20,8 +21,8 @@ class DatabasePersistence
 
   def find_list(list_id)
     sql = 'SELECT * FROM lists WHERE id = $1'
-    puts "#{sql}: #{list_id}"
-    result = @db.exec_params(sql, [list_id])
+    result = query(sql, list_id)
+
     tuple = result.first
     id = tuple['id']
     name = tuple['name']
@@ -80,5 +81,10 @@ class DatabasePersistence
       sql = File.read('./schema.sql')
       @db.exec(sql)
     end
+  end
+
+  def query(statement, *params)
+    @logger.info "#{statement}: #{params}"
+    @db.exec_params(statement, params)
   end
 end
