@@ -153,7 +153,7 @@ end
 post '/lists/:list_id/todos/:item_id' do # changes the status on item
   @id = params[:list_id].to_i
   item_id = params[:item_id].to_i
-  @storage.update_item_status(@id, item_id, params[:status])
+  @storage.update_todo_status(@id, item_id, params[:status])
   session[:success] = 'The todo item has been updated.'
   redirect "/lists/#{@id}"
 end

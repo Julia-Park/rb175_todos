@@ -37,7 +37,7 @@ class SessionPersistence
     list[:todos].delete_if { |item| item[:id] == item_id }
   end
 
-  def update_item_status(list_id, item_id, status)
+  def update_todo_status(list_id, item_id, status)
     find_todo_from_list(list_id, item_id)[:status] = status
   end
 
