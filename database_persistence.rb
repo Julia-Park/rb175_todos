@@ -8,25 +8,19 @@ class DatabasePersistence
   end
 
   def all_lists # => array of hashes
-    # each has needs to contain id: '', name: '', todos: []
     sql = 'SELECT * FROM lists;'
     result = query(sql)
 
     result.map do |tuple|
-      id = tuple['id']
-      name = tuple['name']
-      {id: id, name: name, todos: []}
+      { id: tuple['id'].to_i, name: tuple['name'], todos: all_todos(tuple['id']) }
     end
   end
 
-  def find_list(list_id)
-    sql = 'SELECT * FROM lists WHERE id = $1'
+  def find_list(list_id) # => Hash corresponding to given list
+    sql = 'SELECT name FROM lists WHERE id = $1'
     result = query(sql, list_id)
 
-    tuple = result.first
-    id = tuple['id']
-    name = tuple['name']
-    {id: id, name: name, todos: []}
+    { id: list_id.to_i, name: result.first['name'], todos: all_todos(list_id) }
   end
 
   def add_list(list_name)
@@ -48,23 +42,19 @@ class DatabasePersistence
     # list[:todos] << { id: item_id, name: todo_item, status: '' }
   end
 
-  def find_todo_from_list(list_id, item_id)
-    # list = find_list(list_id)
-    # list[:todos].select { |item| item[:id] == item_id }.first
-  end
-
   def delete_todo_from_list(list_id, item_id)
     # list = find_list(list_id)
     # list[:todos].delete_if { |item| item[:id] == item_id }
   end
 
   def update_item_status(list_id, item_id, status)
-    # find_todo_from_list(list_id, item_id)[:status] = status
+    sql = 'UPDATE todos SET completed = $1 WHERE id = $2'
+    query(sql, status == 'complete', item_id)
   end
 
   def complete_all_todos(list_id)
-    # list = find_list(list_id)
-    # list[:todos].each { |item| item[:status] = 'complete' }
+    sql = 'UPDATE todos SET completed = TRUE where lists_id = $1'
+    query(sql, list_id)
   end
 
   private
@@ -86,5 +76,22 @@ class DatabasePersistence
   def query(statement, *params)
     @logger.info "#{statement}: #{params}"
     @db.exec_params(statement, params)
+  end
+
+  def all_todos(list_id)
+    sql = 'SELECT * FROM todos WHERE lists_id = $1'
+    result = query(sql, list_id)
+
+    return [] if result.ntuples == 0
+
+    result.map do |tuple|
+      status = tuple['completed'] == 't' ? 'complete' : ''
+      { id: tuple['id'].to_i, name: tuple['name'], status: status }
+    end
+  end
+
+  def find_todo_from_list(list_id, item_id)
+    sql = 'SELECT * FROM todos WHERE lists_id = $1 AND id = $2'
+    result = query(sql, list_id, item_id)
   end
 end
