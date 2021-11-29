@@ -54,6 +54,10 @@ before do
   @storage = DatabasePersistence.new(logger)
 end
 
+after do
+  @storage.disconnect
+end
+
 helpers do
   def incomplete_todos_count(list)
     list[:todos].select { |item| item[:status] == '' }.size
