@@ -32,17 +32,12 @@ class SessionPersistence
     list[:todos] << { id: item_id, name: todo_item, status: '' }
   end
 
-  def find_todo_from_list(list_id, item_id)
-    list = find_list(list_id)
-    list[:todos].select { |item| item[:id] == item_id }.first
-  end
-
   def delete_todo_from_list(list_id, item_id)
     list = find_list(list_id)
     list[:todos].delete_if { |item| item[:id] == item_id }
   end
 
-  def update_item_status(list_id, item_id, status)
+  def update_todo_status(list_id, item_id, status)
     find_todo_from_list(list_id, item_id)[:status] = status
   end
 
@@ -56,5 +51,10 @@ class SessionPersistence
   def next_id(items_with_id)
     max_id = items_with_id.map { |item| item[:id] }.max || 0
     max_id + 1
+  end
+
+  def find_todo_from_list(list_id, item_id)
+    list = find_list(list_id)
+    list[:todos].select { |item| item[:id] == item_id }.first
   end
 end
