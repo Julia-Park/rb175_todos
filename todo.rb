@@ -17,7 +17,7 @@ end
 def error_for_todo_item(list_id, new_item)
   if !(1..100).cover?(new_item.length)
     'The todo item must be between 1 and 100 characters.'
-  elsif @storage.find_list(list_id)[:todos].any? { |item| item[:name].downcase == new_item.downcase }
+  elsif @storage.all_todos(list_id).any? { |item| item[:name].downcase == new_item.downcase }
     'The todo item must be unique.'
   end
 end
@@ -60,13 +60,13 @@ after do
 end
 
 helpers do
-  def incomplete_todos_count(list)
-    list[:todos].select { |item| item[:status] == '' }.size
-  end
+  # def incomplete_todos_count(list)
+  #   list[:todos].select { |item| item[:status] == '' }.size
+  # end
 
-  def todos_count(list)
-    list[:todos].size
-  end
+  # def todos_count(list)
+  #   list[:todos].size
+  # end
 
   def list_class(list)
     'complete' if complete?(list)
@@ -116,6 +116,7 @@ end
 get '/lists/:list_id' do # Renders contents of a list
   @id = params[:list_id].to_i
   @list = load_list(@id)
+  @todos = @storage.all_todos(@id)
 
   erb :todo_list
 end

@@ -38,10 +38,9 @@ class DatabasePersistence
       WHERE lists.id = $1
       GROUP BY lists.id
     SQL
-    # 'SELECT name FROM lists WHERE id = $1'
     result = query(sql, list_id)
 
-    form_list(result.first, all_todos(list_id))
+    form_list(result.first)
   end
 
   def add_list(list_name)
@@ -57,6 +56,18 @@ class DatabasePersistence
   def update_list_name(list_id, new_name)
     sql = 'UPDATE lists SET name = $1 WHERE id = $2;'
     query(sql, new_name, list_id)
+  end
+
+  def all_todos(list_id)
+    sql = 'SELECT * FROM todos WHERE lists_id = $1'
+    result = query(sql, list_id)
+
+    return [] if result.ntuples == 0
+
+    result.map do |tuple|
+      status = tuple['completed'] == 't' ? 'complete' : ''
+      { id: tuple['id'].to_i, name: tuple['name'], status: status }
+    end
   end
 
   def add_todo_to_list(list_id, todo_item)
@@ -100,32 +111,16 @@ class DatabasePersistence
     @db.exec_params(statement, params)
   end
 
-  def all_todos(list_id)
-    sql = 'SELECT * FROM todos WHERE lists_id = $1'
-    result = query(sql, list_id)
-
-    return [] if result.ntuples == 0
-
-    result.map do |tuple|
-      status = tuple['completed'] == 't' ? 'complete' : ''
-      { id: tuple['id'].to_i, name: tuple['name'], status: status }
-    end
-  end
-
   def find_todo_from_list(list_id, item_id)
     sql = 'SELECT * FROM todos WHERE lists_id = $1 AND id = $2'
     result = query(sql, list_id, item_id)
   end
 
-  def form_list(tuple, todos=nil) # => hash
-    list = { id: tuple['id'].to_i,
-        name: tuple['name'],
-        todos_count: tuple['count_todos'].to_i,
-        todos_remaining_count: tuple['count_incomplete_todos'].to_i
+  def form_list(tuple) # => hash
+    { id: tuple['id'].to_i,
+      name: tuple['name'],
+      todos_count: tuple['count_todos'].to_i,
+      todos_remaining_count: tuple['count_incomplete_todos'].to_i
     }
-
-    list[:todos] = todos if todos 
-
-    list
   end
 end
