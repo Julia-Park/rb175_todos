@@ -26,8 +26,9 @@ def complete?(object)
   if !object[:status].nil? # check if object is a single item or a todo list
     object[:status] == 'complete'
   else
-    !object[:todos].empty? &&
-      object[:todos].all? { |item| item[:status] == 'complete' }
+    !object[:todos_remaining_count].nil? &&
+      object[:todos_count] > 0 &&
+      object[:todos_remaining_count] == 0
   end
 end
 

@@ -16,19 +16,32 @@ class DatabasePersistence
   end
 
   def all_lists # => array of hashes
-    sql = 'SELECT * FROM lists;'
+    sql = <<~SQL
+      SELECT lists.*, COUNT(todos.id) AS count_todos, 
+      COUNT(NULLIF(todos.completed, true)) AS count_incomplete_todos
+      FROM lists
+      LEFT JOIN todos ON lists_id = lists.id
+      GROUP BY lists.id
+      ORDER BY lists.id;
+      SQL
     result = query(sql)
 
-    result.map do |tuple|
-      { id: tuple['id'].to_i, name: tuple['name'], todos: all_todos(tuple['id']) }
-    end
+    result.map { |tuple| form_list(tuple) }
   end
 
   def find_list(list_id) # => Hash corresponding to given list
-    sql = 'SELECT name FROM lists WHERE id = $1'
+    sql = <<~SQL
+      SELECT lists.*, COUNT(todos.id) AS count_todos, 
+      COUNT(NULLIF(todos.completed, true)) AS count_incomplete_todos
+      FROM lists
+      LEFT JOIN todos ON lists_id = lists.id
+      WHERE lists.id = $1
+      GROUP BY lists.id
+    SQL
+    # 'SELECT name FROM lists WHERE id = $1'
     result = query(sql, list_id)
 
-    { id: list_id.to_i, name: result.first['name'], todos: all_todos(list_id) }
+    form_list(result.first, all_todos(list_id))
   end
 
   def add_list(list_name)
@@ -102,5 +115,17 @@ class DatabasePersistence
   def find_todo_from_list(list_id, item_id)
     sql = 'SELECT * FROM todos WHERE lists_id = $1 AND id = $2'
     result = query(sql, list_id, item_id)
+  end
+
+  def form_list(tuple, todos=nil) # => hash
+    list = { id: tuple['id'].to_i,
+        name: tuple['name'],
+        todos_count: tuple['count_todos'].to_i,
+        todos_remaining_count: tuple['count_incomplete_todos'].to_i
+    }
+
+    list[:todos] = todos if todos 
+
+    list
   end
 end
