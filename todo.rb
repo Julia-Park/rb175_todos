@@ -5,6 +5,7 @@ require 'sinatra/content_for'
 require 'tilt/erubis'
 
 require_relative 'database_persistence'
+require_relative 'mongo_db'
 
 def error_for_list_name(name)
   if !(1..100).cover?(name.length)
@@ -49,25 +50,21 @@ end
 configure(:development) do
   require 'sinatra/reloader'
   also_reload 'database_persistence.rb'
+  also_reload 'mongo_db.rb'
 end
 
 before do
   @storage = DatabasePersistence.new(logger)
+  @mongo = MongoDB.new()
+  puts @mongo
 end
 
 after do
   @storage.disconnect
+  @mongo.disconnect
 end
 
 helpers do
-  # def incomplete_todos_count(list)
-  #   list[:todos].select { |item| item[:status] == '' }.size
-  # end
-
-  # def todos_count(list)
-  #   list[:todos].size
-  # end
-
   def list_class(list)
     'complete' if complete?(list)
   end
@@ -83,6 +80,15 @@ helpers do
 
     list.each_with_index do |element, idx|
       yield(element, idx) if complete?(element)
+    end
+  end
+
+  def current_user() 
+    user = @mongo.current_user
+    if user
+      "Current User: #{user[:name]} | Login Date/Time: #{user[:logInTime]}"
+    else
+      'There is no user logged in!'
     end
   end
 end
@@ -195,5 +201,22 @@ post '/lists/:list_id/delete' do # Delete an existing todo list
     '/lists'
   else
     redirect '/lists'
+  end
+end
+
+get '/login' do 
+  erb :login, layout: :layout
+end
+
+post '/login' do 
+  @username = params[:username].strip
+
+  if @username != ''
+    @mongo.login(@username)
+    session[:success] = "Welcome #{@username}!"
+    redirect '/lists'
+  else
+    session[:error] = 'A name is required.'
+    erb :login, layout: :layout
   end
 end

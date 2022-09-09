@@ -412,3 +412,11 @@ form fieldset.actions a:hover {
 #todos > ul li.complete .check {
   background: transparent url("../images/icon_check.png") 50% 50% no-repeat; 
 }
+
+footer {
+  text-align: center;
+}
+
+footer a {
+  color: #dd5f4f;
+}
