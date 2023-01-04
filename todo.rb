@@ -4,8 +4,8 @@ require 'sinatra'
 require 'sinatra/content_for'
 require 'tilt/erubis'
 
-require_relative 'database_persistence'
-require_relative 'mongo_db'
+require_relative 'helpers/database_persistence'
+require_relative 'helpers/mongo_db'
 
 def error_for_list_name(name)
   if !(1..100).cover?(name.length)
